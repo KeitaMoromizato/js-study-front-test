@@ -4,6 +4,8 @@
 * フロントエンドのテストの種類
 * node.jsのテストとの違い
 * 何故ブラウザテストが必要か？
+* Try it!
+* karma.conf.jsの中身
 
 ## フロントエンドのテストの種類
 フロントエンドで行うテストは大きく分けて2種類ある。今回は単体/結合テストを行う。
@@ -41,3 +43,31 @@ node.jsとブラウザではJavaScriptの実行エンジンが違う。同じJav
 * うっかりnodeのAPI (process.nextTickとか)を使ってしまう
 
 また、DOM操作もブラウザ上でしか出来ないので、フロントエンドのコードの信頼性を確認するためにはブラウザテストが必須。
+
+## Try it!
+
+本レポジトリをCloneします。
+
+```
+$ git clnoe https://github.com/KeitaMoromizato/js-study-front-test
+$ npm install
+```
+
+以下のコマンドでテストを実行。ブラウザが起動し、テスト結果がコンソールに出たらOKです。
+
+```
+$ npm test
+```
+
+テストコマンドは`package.json`内で定義されています。今回はテストランナーにKarmaを使っています。 karmaがグローバルインストールされていれば `karma start`でも同じことですが、テストは基本的に誰の環境でも同じように動くことが求められているため、ローカルインストールされたKarmaを使用しています。
+
+```
+  "scripts": {
+    "test": "./node_modules/karma/bin/karma start"
+  },
+```
+
+テストの設定ファイルは全て`karma.conf.js`内に書かれています。
+
+## karma.conf.jsの中身
+
