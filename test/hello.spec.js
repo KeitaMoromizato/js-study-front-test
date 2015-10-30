@@ -1,8 +1,7 @@
-var assert = require('power-assert');
+const assert = require('power-assert');
 
-describe("karma and mocha testing", function() {
-  it ("return hello", function() {
+describe("karma and mocha testing", () => {
+  it ("return hello", () => {
     assert(hello() !== "hello");
   });
 });
-          
