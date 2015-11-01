@@ -67,7 +67,93 @@ $ npm test
   },
 ```
 
-テストの設定ファイルは全て`karma.conf.js`内に書かれています。
+テストの設定ファイルは全て`karma.conf.js`内に書かれています。詳しくは次の章で解説します。
 
 ## karma.conf.jsの中身
 
+Karmaに関する設定はすべて`karma.conf.js`の中に書きます。karma実行時にオプションとしてconfファイルを渡してあげれば、別のファイル名にしても大丈夫です。もし空のプロジェクトから`karma.conf.js`を生成したい場合は、`karma init`コマンドを叩き、質問に答えていくことで自動的に作られます。
+
+`karma.conf.js`の前に、今回使用しているnpmモジュールを確認します。ちょっと多いです。
+
+```
+  "devDependencies": {
+    "babelify": "^7.0.2",
+    "browserify": "^12.0.1",
+    "espowerify": "^1.0.0",
+    "karma": "^0.13.14",
+    "karma-browserify": "^4.4.0",
+    "karma-chrome-launcher": "^0.2.1",
+    "karma-mocha": "^0.2.0",
+    "mocha": "^2.3.3",
+    "power-assert": "^1.1.0"
+  }
+```
+
+それぞれのnpmモジュールの役割
+
+|npm|description|
+|---|---|
+|browserify|フロント側でnpmモジュールの依存性解決|
+|babelify|browserify時にbabelを使ってES5に変換|
+|espowerify|browserify時にpower-assertの中間コードに変換|
+|karma|ブラウザテストランナー|
+|karma-browserify|karma実行時に、プリプロセッサとしてbrowserifyを実行|
+|karma-chrome-launcher|chromeでテストを実行するためのモジュール|
+|karma-mocha|karmaでmochaを使うためのモジュール|
+|mocha|テストフレームワーク|
+|power-assert|アサーションライブラリ|
+
+どんなモジュールを使用しているか分かったところで、`karma.conf.js`の中身を見ていく。
+
+
+### framework
+
+`framework`にはnpmで使用しているkarma用framework(karama-xxxx)を指定します。`karma-chrome-launcher`は必要無かった。ちょっと理由はよく分からない。
+
+```
+  frameworks: ['mocha', 'browserify'],
+```
+
+### files
+
+`files`にはテストターゲット、テストコードを記載する。
+
+```
+  files: [
+    'src/**/*.js',
+    'test/**/*.spec.js'
+  ],
+```
+
+### preprocessors
+
+`preprocessors`にはプリプロセッサを通したいファイルと、そのモジュールを指定する。今回はテストコードをCommonJS形式のモジュールを活用して書くので、browserifyを使用。
+
+```
+  preprocessors: {
+    "test/**/*.spec.js": "browserify"
+  },
+```
+
+### browserify
+
+`preprocessors`でbrowserifyを使用することにしたので、その設定。今回はテストコードをES6で書けるようにし、アサーションに`power-assert`を使用するので`babelify`/`espowerify`を指定。
+
+
+```
+  browserify: {
+    debug: true,
+    transform: [
+      'babelify',
+      'espowerify'
+    ]
+   },
+```
+
+### browser
+
+テストを走らせるブラウザを指定。複数指定した場合は同時に立ち上がる。ここにブラウザを追加したうえで、npmモジュールもインストールする必要があるので注意。
+
+```
+  browsers: ['Chrome'],
+```
