@@ -6,6 +6,7 @@
 * 何故ブラウザテストが必要か？
 * Try it!
 * karma.conf.jsの中身
+* broserifyされたモジュールのテスト
 
 ## フロントエンドのテストの種類
 フロントエンドで行うテストは大きく分けて2種類ある。今回は単体/結合テストを行う。
@@ -156,4 +157,72 @@ Karmaに関する設定はすべて`karma.conf.js`の中に書きます。karma�
 
 ```
   browsers: ['Chrome'],
+```
+
+## broserifyされたモジュールのテスト
+
+### browserifyとは？
+
+browserifyしたからと言ってnode.jsのAPIはフロントでは使えない。あくまでも依存性解決のツール。
+
+```
+browserify !== node.jsのモジュール(npm)をブラウザ上でも使えるようにする
+browserify === CommonJS形式のモジュールを、依存関係を解決したうえで展開してくれるツール
+```
+
+`package.json`にbrowserifyのビルドコマンドを定義。babelifyで依存性解決のついでにES5へ変換するが、そのときにオプションが必要。babel v6.xから構成が変更され、babel本体はシンプルになりプラグインを追加して動かす仕組みになった。なのでプラグインとして`babel-preset-es2015`を指定する。
+
+```
+"scripts": {
+  "build": "./node_modules/browserify/bin/cmd.js -e scripts/index.js -t [ babelify --presets es2015 ] -o src/bundle.js"
+}
+```
+
+### テスト
+
+本当は、動作環境とテスト環境を出来る限り近づけるため、browserifyが展開された後の`bundle.js`をテストすべきだと思う。ただその方法が分からなかったので、browserifyが正確に依存性を展開してくれると期待して、モジュール単位のテストを行う。
+
+試しに以下のコードをテストする。SNSとかによくある「〇〇日前」とかを表示するためのモジュール。
+
+```scripts/modules/DateFormatter.js
+'use strict';
+
+class DateFormatter {
+  // 2つの日付の差分を求める
+  format(date1, date2) {
+    const sec = (date1 - date2) / 1000;
+
+    if (sec < 60) {
+      return `${sec}秒前`;
+    }
+    else if (sec < 60 * 60) {
+      return `${sec / 60}分前`;
+    }
+    else if (sec < 60 * 60 * 24) {
+      return `${sec / 60 / 60}時間前`;
+    }
+
+    throw new Error('Invalid');
+  }
+}
+
+module.exports = DateFormatter;
+```
+
+あとはnode.jsのテストを書いた時と同じように、`require()`でモジュールを読み込んでテストを書いていく。今回は`karma`によりテストコードもbrowserifyで変換しているため、普通にrequireが使える。
+
+```
+/**
+ * browserifyモジュールのテスト
+ */
+describe("DateFormatter test", () => {
+  const DateFormatter = require('../scripts/modules/DateFormatter');
+  const df = new DateFormatter();
+
+  it("return seconds string", (done) => {
+    const str = df.format(new Date('2015-01-01 00:00:10'), new Date('2015-01-01 00:00:00'));
+    assert(str === '10秒前');
+    done();
+  });
+});
 ```
